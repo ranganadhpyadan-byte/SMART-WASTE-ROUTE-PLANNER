@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Smart City waste collection route planning with graphs and Dijkstra's algorithm.">
+  <title>Nashik City | Smart Waste Route Planner</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="./" aria-label="Smart Waste home">
+      <span class="brand-mark">SW</span>
+      <span><strong>SMART WASTE</strong><small>COLLECTION ROUTE PLANNER</small></span>
+    </a>
+    <div class="header-status"><span class="status-dot"></span><span>NETWORK MODEL</span><span class="header-date" id="currentDate"></span></div>
+  </header>
+
+  <main class="shell">
+    <section class="intro-row">
+      <div>
+        <p class="eyebrow">NASHIK CITY / FIELD OPERATIONS</p>
+        <h1>NASHIK CITY —<br><em>SMART WASTE ROUTE PLANNER</em></h1>
+        <p class="intro-copy">Graph-based shortest-path planning using Dijkstra's Algorithm across selected Nashik locations.</p>
+      </div>
+      <div class="model-note">
+        <span class="note-icon">i</span>
+        <div>
+          <p><strong>Dataset: Nashik locations</strong>Approximate demonstration route distances and waste values. Not official municipal measurements.</p>
+          <details class="sources-panel">
+            <summary>Data Sources &amp; Limitations</summary>
+            <p><strong>REAL LOCATION DATA:</strong> Nashik place names and civic context are referenced from public NMC and map/location sources.</p>
+            <p><strong>APPROXIMATE PROJECT DATA:</strong> Coordinates, road names, distances, and estimated travel times are simplified academic route data.</p>
+            <p><strong>DEMONSTRATION DATA:</strong> Waste levels and priorities are demonstration values, not live NMC measurements.</p>
+            <p>Solid-waste context: <a href="https://nmc.gov.in/home/getfrontpage/11/11/M" target="_blank" rel="noreferrer">NMC Solid Waste Management Department</a> and <a href="https://mohua.gov.in/offerings/schemes-and-services/details/swachh-bharat-mission-gjN5cTMtQWa" target="_blank" rel="noreferrer">MoHUA Swachh Bharat Mission</a>.</p>
+            <p>This prototype uses Graph + Min Heap + Dijkstra. It is not a live municipal dispatch system and does not require a paid Google Maps API.</p>
+          </details>
+        </div>
+      </div>
+    </section>
+
+    <section class="metrics" aria-label="Network metrics">
+      <article class="metric-card"><span class="metric-label">Total locations</span><strong id="totalLocations">--</strong><span class="metric-detail">network nodes</span></article>
+      <article class="metric-card"><span class="metric-label">Total roads</span><strong id="totalRoads">--</strong><span class="metric-detail">bidirectional links</span></article>
+      <article class="metric-card accent"><span class="metric-label">High priority points</span><strong id="highPriority">--</strong><span class="metric-detail">need attention</span></article>
+      <article class="metric-card"><span class="metric-label">Average waste level</span><strong id="averageWaste">--</strong><span class="metric-detail">across locations</span></article>
+      <article class="metric-card route-metric"><span class="metric-label">Last route distance</span><strong id="lastDistance">--</strong><span class="metric-detail">awaiting calculation</span></article>
+    </section>
+
+    <section class="workspace-grid">
+      <aside class="control-panel panel">
+        <div class="panel-heading"><div><p class="eyebrow">01 / PLAN</p><h2>Route planner</h2></div><span class="live-chip">LIVE</span></div>
+        <form id="routeForm" novalidate>
+          <label class="field-label" for="startSelect">Starting location</label>
+          <select id="startSelect" required><option value="">Select location</option></select>
+          <label class="field-label" for="destinationSelect">Destination</label>
+          <select id="destinationSelect" required><option value="">Select location</option></select>
+          <button class="primary-button" type="submit"><span>Find shortest route</span><span class="button-arrow">-&gt;</span></button>
+        </form>
+        <div class="planner-message" id="plannerMessage" role="status" aria-live="polite"></div>
+        <div class="route-result" id="routeResult" hidden>
+          <div class="result-heading"><span class="eyebrow">RESULT / DIJKSTRA</span><span class="result-check">OK</span></div>
+          <h3>Shortest route</h3>
+          <div class="route-steps" id="routeSteps"></div>
+          <div class="result-stats"><div><span>Total distance</span><strong id="resultDistance">--</strong></div><div><span>Estimated time</span><strong id="resultTime">--</strong></div><div><span>Route stops</span><strong id="routeStops">--</strong></div><div><span>Nodes evaluated</span><strong id="visitedNodes">--</strong></div></div>
+          <div class="route-road-list"><p class="eyebrow">ROADS USED</p><div id="routeRoads"></div></div>
+        </div>
+      </aside>
+
+      <section class="map-panel panel">
+        <div class="panel-heading map-heading"><div><p class="eyebrow">02 / NETWORK VIEW</p><h2>City graph</h2></div><div class="legend"><span><i class="legend-line route"></i>Shortest route</span><span><i class="legend-dot high"></i>High priority</span></div></div>
+        <div class="map-stage" id="mapStage"><svg id="graphSvg" role="img" aria-label="Interactive city road graph"></svg><div class="map-loading" id="mapLoading"><span class="loading-spinner" aria-hidden="true"></span><span>Loading network</span></div></div>
+        <div class="map-footer"><span><strong id="mapNodeCount">--</strong> nodes</span><span><strong id="mapRoadCount">--</strong> roads</span><span>Click a node for details</span></div>
+      </section>
+    </section>
+
+    <section class="lower-grid">
+      <section class="panel locations-panel">
+        <div class="panel-heading"><div><p class="eyebrow">03 / FIELD POINTS</p><h2>Location directory</h2></div><span class="count-label" id="locationCount">0 locations</span></div>
+        <div class="directory-tools"><label class="search-box"><span aria-hidden="true">/</span><input type="search" id="locationSearch" placeholder="Search Nashik locations..." aria-label="Search Nashik locations"></label><div class="filter-tabs" id="filterTabs"><button class="filter active" data-filter="All">All</button><button class="filter" data-filter="Municipal">Municipal</button><button class="filter" data-filter="Transit">Transit</button><button class="filter" data-filter="Residential">Residential</button><button class="filter" data-filter="Commercial">Commercial</button><button class="filter" data-filter="Industrial">Industrial</button><button class="filter" data-filter="Processing Facility">Processing facility</button><button class="filter" data-filter="High Priority">High priority</button></div></div>
+        <div class="location-list" id="locationList"></div>
+      </section>
+      <aside class="side-stack">
+        <section class="panel detail-panel" id="detailPanel"><div class="panel-heading"><div><p class="eyebrow">04 / INSPECT</p><h2>Location details</h2></div><span class="detail-id" id="detailId">--</span></div><div id="detailContent" class="empty-state"><span class="empty-icon">+</span><p>Select a node or directory item<br>to inspect its field data.</p></div></section>
+        <section class="panel history-panel"><div class="panel-heading"><div><p class="eyebrow">05 / MEMORY</p><h2>Recent routes</h2></div><button class="text-button" id="clearHistory" type="button">Clear history</button></div><div id="historyList" class="history-list"></div></section>
+      </aside>
+    </section>
+  </main>
+  <footer class="footer"><span>SMART WASTE / GRAPH ROUTE LAB</span><span>Built for learning • <a href="README.md">Project documentation</a></span></footer>
+  <script type="module" src="js/app.js"></script>
+</body>
+</html>
