@@ -1,0 +1,31 @@
+# OS / editor
+.DS_Store
+Thumbs.db
+.vscode/
+
+# Environment and secrets
+.env
+.env.*
+*.pem
+*.key
+*.crt
+*.pfx
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+env/
+.pytest_cache/
+
+# Node / JS tooling
+node_modules/
+npm-debug.log*
+
+# Generated / temporary files
+coverage/
+dist/
+build/
+tmp/
+*.log
